@@ -17,11 +17,13 @@ if __name__ == "__main__":
     print('Scraping in progress...', end = ' ')
 
     listing_list_result = scraper.scrape_wellcee_listings(selenium_driver)
-
     df = scraper.scrape_wellcee_data(listing_list_result)
-
-    print('Scraping Done!')
-
     df.to_sql('wellcee_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
+    print('Wellcee data uploaded!')    
 
-    print('Data uploaded!')
+    listing_list_result = scraper.scrape_smartshanghai_listing(3)
+    df = scraper.scrape_smartshanghai_data(listing_list_result)
+    df.to_sql('smart_shanghai_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
+    print('Smart Shanghai data uploaded!')   
+
+   
