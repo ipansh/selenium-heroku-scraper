@@ -3,6 +3,7 @@ import scraper
 import os
 from sqlalchemy import create_engine, text
 import pandas as pd
+import telegram_notifier
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
@@ -11,6 +12,7 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--no-sandbox")
 selenium_driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
 db_access_key = os.environ.get("POSTGRE")
+telegram_token = os.environ.get("TELEGRAM_TOKEN")
 
 if __name__ == "__main__":
     cnx = create_engine(db_access_key)
@@ -47,3 +49,5 @@ if __name__ == "__main__":
     final_df.to_sql('smart_shanghai_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
 
     print('Smart Shanghai data uploaded!')
+
+    telegram_notifier.send_message('Job done, my lord!', telegram_token)
