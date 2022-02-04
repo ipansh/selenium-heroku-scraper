@@ -1,7 +1,8 @@
 from selenium import webdriver
 import scraper
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+import pandas as pd
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
@@ -14,16 +15,23 @@ db_access_key = os.environ.get("POSTGRE")
 if __name__ == "__main__":
     cnx = create_engine(db_access_key)
 
+    sql = '''select * from public.wellcee_listings;'''
+
+    query = text(sql)
+    current_df = pd.read_sql_query(query, cnx)
+
     print('Scraping in progress...', end = ' ')
 
     listing_list_result = scraper.scrape_wellcee_listings(selenium_driver)
-    print(listing_list_result)
+    print(listing_list_result)		
     df = scraper.scrape_wellcee_data(listing_list_result)
-    print(df)
-    df.to_sql('wellcee_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
-    print('Wellcee data uploaded!')    
+    final_df = pd.concat([current_df,df]).drop_duplicates().drop(columns = ['id']).reset_index().rename(columns = {'index':'id'})
+    print(final_df)
+    final_df.to_sql('wellcee_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
 
-    listing_list_result = scraper.scrape_smartshanghai_listing(3)
-    df = scraper.scrape_smartshanghai_data(listing_list_result)
-    df.to_sql('smart_shanghai_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
-    print('Smart Shanghai data uploaded!') 
+    #print('Wellcee data uploaded!')
+
+    #listing_list_result = scraper.scrape_smartshanghai_listing(3)
+    #df = scraper.scrape_smartshanghai_data(listing_list_result)
+    #df.to_sql('smart_shanghai_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
+    #print('Smart Shanghai data uploaded!') 
