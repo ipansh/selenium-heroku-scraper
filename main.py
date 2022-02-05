@@ -56,4 +56,6 @@ if __name__ == "__main__":
     all_together_df['id'] = list(range(0,len(all_together_df)))
     all_together_df.to_sql('all_listings', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
 
+    all_together_df[['url','price','district','floor']].to_sql('all_listiings_short', cnx, schema = 'public', index = False, chunksize=100, if_exists='replace', method = 'multi')
+
     telegram_notifier.send_message('Job done!', telegram_token)
